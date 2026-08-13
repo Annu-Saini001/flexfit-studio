@@ -1,14 +1,20 @@
 "use client";
 
+import { useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { formatDateTime } from "@/lib/format";
 
 export default function SchedulePage() {
   const utils = trpc.useUtils();
   const { data: user } = trpc.auth.me.useQuery();
-  const { data: classes, isLoading } = trpc.classes.list.useQuery({
-    from: new Date().toISOString(),
-  });
+
+  // 1. Memoize the ENTIRE input object so its reference memory address NEVER changes
+  const queryInput = useMemo(() => ({
+    from: new Date().toISOString()
+  }), []);
+
+  // 2. Pass the memoized object directly
+  const { data: classes, isLoading } = trpc.classes.list.useQuery(queryInput);
 
   const book = trpc.bookings.book.useMutation({
     onSuccess: async () => {
