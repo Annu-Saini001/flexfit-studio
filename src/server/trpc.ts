@@ -49,6 +49,14 @@ export const staffProcedure = protectedProcedure.use(({ ctx, next }) => {
   }
   return next({ ctx });
 });
+ 
+// NEW
+export const trainerProcedure = protectedProcedure.use(({ ctx, next }) => {
+  if (ctx.user.role !== "trainer") {
+    throw new TRPCError({ code: "FORBIDDEN", message: "Trainers only." });
+  }
+  return next({ ctx });
+});
 
 export const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
   if (ctx.user.role !== "admin") {

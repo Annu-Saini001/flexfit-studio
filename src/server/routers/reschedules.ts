@@ -170,13 +170,7 @@ export const reschedulesRouter = router({
       const targetIsFull = Number(count) >= targetClass.capacity;
 
       // Get the membership to check for unlimited credits
-      const membership = originalBooking.membershipId
-        ? await ctx.db
-            .select()
-            .from(memberships)
-            .where(eq(memberships.id, originalBooking.membershipId))
-            .get()
-        : null;
+      
 
       // Create the new booking (don't charge credits, they keep what they spent)
       const newBooking = await ctx.db

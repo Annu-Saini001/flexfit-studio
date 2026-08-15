@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { eq } from "drizzle-orm";
+import { eq, and, gte } from "drizzle-orm";
 import { membershipPlans, memberships, payments } from "@/db/schema";
 import { router, publicProcedure, protectedProcedure, adminProcedure } from "../trpc";
 
@@ -43,6 +43,26 @@ export const plansRouter = router({
       }
 
       const today = new Date().toISOString().slice(0, 10);
+
+      const existingActive = await ctx.db
+          .select()
+          .from(memberships)
+          .where(
+            and(
+              eq(memberships.userId, ctx.user.id),
+              eq(memberships.status, "active"),
+              gte(memberships.endDate, today),
+            ),
+          )
+          .get();
+
+        if (existingActive) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message:
+              "You already have an active membership. Cancel it or wait until it expires before subscribing to a new plan.",
+          });
+        }
 
       const membership = await ctx.db
         .insert(memberships)
